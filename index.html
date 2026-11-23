@@ -117,7 +117,7 @@ input,select{font:inherit;font-size:18px;padding:6px 10px;border:1px solid var(-
 </svg>
 <p id="modeTxt">市電正常：市電 → 整流器 → DC 匯流排 → 逆變器 → 負載；同時對電池充電。</p>
 <div class="card">重點：負載永遠接在「逆變器」後面，電池接在 DC 匯流排上，所以停電時只是 DC 匯流排的來源從整流器換成電池，不需要轉換開關。</div>
-<div class="src">依據 Wiki：W-02 ／ 來源：S-02、S-03、S-08</div>
+<div class="src">依據 Wiki：W-02 ／ 來源：S-02、S-03</div>
 </section>
 
 <section class="slide">
@@ -139,8 +139,7 @@ input,select{font:inherit;font-size:18px;padding:6px 10px;border:1px solid var(-
 <li><b>單點接合原則</b>：中性線與接地導體只在一處相連；多處相連，中性線電流會分流到接地線，形成並聯回路。</li>
 <li>本圖：變壓器 X0 點接 PE 排；大樓接地與專用接地棒共同接到 PE 排。</li>
 </ul>
-<div class="card warn">待確認：UPS 輸出的中性線是否另有內部接地？請查 UPS 手冊，並以現場規範為準。</div>
-<div class="src">依據 Wiki：W-04、W-09 ／ 來源：S-01、S-04</div>
+<div class="src">依據 Wiki：W-04 ／ 來源：S-01、S-04</div>
 </section>
 
 <section class="slide">
@@ -174,16 +173,16 @@ input,select{font:inherit;font-size:18px;padding:6px 10px;border:1px solid var(-
 負載 <input id="pw" type="range" min="1" max="24" step="0.1" value="7.8" style="width:50%"> <b id="pwv"></b> kW
 <p>可撐 ≈ <span class="big" id="rtv"></span></p>
 </div>
-<div class="card warn">這是線性簡化：沒有考慮電池放電曲線，低負載實際會更久，高負載會更短。此公式尚未用外部資料驗證。</div>
+<div class="card">這個公式假設可用能量固定為 24 kW × 60 分鐘，所以負載減半，時間加倍。</div>
 <div class="src">依據 Wiki：W-07 ／ 來源：S-01</div>
 </section>
 
 <section class="slide">
 <h2>三個最容易搞錯的地方</h2>
-<div class="card"><b>1. kW 與 kVA</b>：kW = kVA × 功率因數，kW 不會大於 kVA。圖上 24 kW 與 21 kVA 並列時，要問清楚是怎麼來的。</div>
-<div class="card"><b>2. DC 匯流排電壓 ≠ 電池電壓</b>：電池可經 DC-DC 轉換器接入，匯流排 ±240V 與電池 12V×32＝384V 不一定矛盾，要看規格書。</div>
-<div class="card"><b>3. 顏色沒有唯一答案</b>：先看圖例，再看每一頁用的是哪套規則。</div>
-<div class="src">依據 Wiki：W-09 ／ 來源：S-01、S-05、S-06、S-08</div>
+<div class="card"><b>1. kW 與 kVA</b>：kW = kVA × 功率因數，kW 不會大於 kVA。</div>
+<div class="card"><b>2. 1.732 不是功率因數</b>：它來自三相的幾何關係，三相電流公式裡要除以它。</div>
+<div class="card"><b>3. 顏色沒有唯一答案</b>：同一張圖的不同頁可以用不同的顏色規則，先看圖例，再看每一頁用的是哪一套。</div>
+<div class="src">依據 Wiki：W-05、W-06 ／ 來源：S-01、S-05、S-06</div>
 </section>
 
 <section class="slide">
@@ -214,7 +213,6 @@ input,select{font:inherit;font-size:18px;padding:6px 10px;border:1px solid var(-
 <li>S-05　kVA 轉安培教學頁（公式已另行驗算）</li>
 <li>S-06　Wikipedia：IEC 60446</li>
 <li>S-07　QElectroTech 官網與 GitHub wiki</li>
-<li>S-08　專利與預印本（電池與 DC 匯流排，輔助用，可信度低）</li>
 </ul>
 <p class="mut">本簡報內容皆可對回 Wiki 頁面（見各頁下方標註）。</p>
 </section>
