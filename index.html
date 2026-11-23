@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>怎麼讀一張 UPS 供電接線圖</title>
+<style>
+:root{--bg:#f6f4ef;--ink:#1d2433;--mut:#5b6472;--org:#d07a10;--blu:#185fa5;--red:#c00000;--grn:#2e8b57;--card:#fff;--line:#d9d4c7}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
+.deck{height:100%;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;padding:5vh 7vw 14vh;display:none;flex-direction:column;overflow:auto}
+.slide.on{display:flex}
+h1{font-size:clamp(28px,4.6vw,56px);margin:0 0 .4em;line-height:1.2}
+h2{font-size:clamp(22px,3vw,36px);margin:0 0 .6em;border-left:8px solid var(--blu);padding-left:.5em}
+p,li{font-size:clamp(16px,1.9vw,22px);line-height:1.65;margin:.3em 0}
+ul{padding-left:1.2em;margin:.3em 0}
+.mut{color:var(--mut)}
+.src{position:absolute;left:7vw;bottom:62px;font-size:13px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.warn{border-left:6px solid var(--org)}
+.dia{width:100%;max-width:1000px;height:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.dia .box{fill:#fff;stroke:var(--ink);stroke-width:2}
+.dia text{fill:var(--ink);font-size:16px;text-anchor:middle}
+.dia .s{font-size:13px;fill:var(--mut)}
+.legend span{display:inline-flex;align-items:center;margin-right:16px;font-size:15px}
+.chip{display:inline-block;width:22px;height:10px;border-radius:2px;margin-right:6px;border:1px solid #0003}
+table{border-collapse:collapse;width:100%;background:var(--card)}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;font-size:clamp(14px,1.6vw,19px)}
+th{background:#ece8dd}
+button{font:inherit;font-size:16px;padding:8px 16px;border:1px solid var(--ink);background:#fff;border-radius:8px;cursor:pointer;margin:4px 6px 4px 0}
+button.act{background:var(--ink);color:#fff}
+input,select{font:inherit;font-size:18px;padding:6px 10px;border:1px solid var(--line);border-radius:6px}
+.big{font-size:clamp(28px,4vw,48px);font-weight:700;color:var(--blu)}
+.nav{position:fixed;left:0;right:0;bottom:0;height:52px;background:#fffc;backdrop-filter:blur(6px);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:16px}
+.prog{position:absolute;left:0;top:0;height:4px;width:100%;background:#0001}
+.prog i{display:block;height:100%;width:0;background:var(--blu);transition:width .2s}
+#ups .f-bat-dis,#ups .xmark{display:none}
+#ups[data-mode=out] .f-bat-dis,#ups[data-mode=out] .xmark{display:inline}
+#ups[data-mode=out] .f-in,#ups[data-mode=out] .f-bat-chg{opacity:.2}
+.fb.ok{color:var(--grn)}.fb.no{color:var(--red)}
+.q{margin:8px 0 14px}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<section class="slide on">
+<h1>怎麼讀一張 UPS 供電接線圖</h1>
+<p>以實驗室 30 kVA UPS 為例：從符號、顏色，到停電時電怎麼走</p>
+<p class="mut">操作：← → 或下方按鈕翻頁；第 4、8、9 頁可以互動。</p>
+<div class="src">依據 Wiki：W-01 ／ 來源：S-01</div>
+</section>
+
+<section class="slide">
+<h2>學完這份簡報，你能做到</h2>
+<ul>
+<li>說出電從哪裡來、依序經過哪些設備</li>
+<li>看懂接線圖上的顏色與符號，並知道什麼時候不能只靠顏色判斷</li>
+<li>用公式驗算三相電流與停電可撐時間</li>
+</ul>
+<div class="card"><b>先備知識：</b>不需要。看到「三相」「kVA」不懂也沒關係，後面會逐一說明。</div>
+<div class="src">依據 Wiki：W-01 ／ 來源：S-01</div>
+</section>
+
+<section class="slide">
+<h2>全貌：電的路線（由左到右，下方是接地）</h2>
+<svg class="dia" viewBox="0 0 1000 390" role="img" aria-label="供電路徑圖">
+<defs>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d07a10"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#185fa5"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#c00000"/></marker>
+</defs>
+<rect class="box" x="10" y="90" width="150" height="90" rx="8"/><text x="85" y="128">大樓配電盤</text><text class="s" x="85" y="152">3φ3W 220V</text>
+<rect class="box" x="210" y="90" width="160" height="90" rx="8"/><text x="290" y="128">隔離變壓器</text><text class="s" x="290" y="152">30 kVA　Δ→Y</text>
+<rect class="box" x="430" y="90" width="160" height="90" rx="8"/><text x="510" y="128">UPS 不斷電</text><text class="s" x="510" y="152">30 kVA</text>
+<rect class="box" x="650" y="90" width="130" height="90" rx="8"/><text x="715" y="128">X1 插座</text><text class="s" x="715" y="152">IEC 60309 32A</text>
+<rect class="box" x="830" y="90" width="150" height="90" rx="8"/><text x="905" y="128">掃描探針顯微鏡</text><text class="s" x="905" y="152">（負載）</text>
+<line x1="160" y1="135" x2="208" y2="135" stroke="#d07a10" stroke-width="4" marker-end="url(#ao)"/><text x="185" y="120" style="fill:#d07a10">220V</text>
+<line x1="370" y1="135" x2="428" y2="135" stroke="#185fa5" stroke-width="4" marker-end="url(#ab)"/><text x="400" y="120" style="fill:#185fa5">380V</text>
+<line x1="590" y1="135" x2="648" y2="135" stroke="#185fa5" stroke-width="4" marker-end="url(#ab)"/><text x="620" y="120" style="fill:#185fa5">380V</text>
+<line x1="780" y1="135" x2="828" y2="135" stroke="#185fa5" stroke-width="4" marker-end="url(#ab)"/><text x="805" y="120" style="fill:#185fa5">380V</text>
+<rect class="box" x="470" y="250" width="120" height="56" rx="8"/><text x="530" y="275">電池箱</text><text class="s" x="530" y="296">12V × 32 只</text>
+<line x1="530" y1="182" x2="530" y2="248" stroke="#c00000" stroke-width="4" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="600" y="222" style="fill:#c00000" class="s">充電↓　↑放電</text>
+<line x1="40" y1="350" x2="960" y2="350" stroke="#2e8b57" stroke-width="6"/>
+<g stroke="#2e8b57" stroke-width="3" stroke-dasharray="6 4"><line x1="85" y1="180" x2="85" y2="347"/><line x1="290" y1="180" x2="290" y2="347"/><line x1="445" y1="180" x2="445" y2="347"/><line x1="530" y1="306" x2="530" y2="347"/><line x1="715" y1="180" x2="715" y2="347"/></g>
+<text x="500" y="378" style="fill:#2e8b57">PE 接地排　←　大樓接地／專用接地棒</text>
+</svg>
+<p class="legend"><span><i class="chip" style="background:#d07a10"></i>220V</span><span><i class="chip" style="background:#185fa5"></i>380V</span><span><i class="chip" style="background:#c00000"></i>直流（電池）</span><span><i class="chip" style="background:#2e8b57"></i>接地</span></p>
+<div class="src">依據 Wiki：W-01、W-04 ／ 來源：S-01（簡化重繪）</div>
+</section>
+
+<section class="slide">
+<h2>UPS 內部：為什麼停電時輸出不會中斷？</h2>
+<div>
+<button id="mN" class="act" onclick="setMode('normal')">市電正常</button>
+<button id="mO" onclick="setMode('out')">市電中斷</button>
+</div>
+<svg id="ups" class="dia" data-mode="normal" viewBox="0 0 900 310">
+<defs>
+<marker id="ub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#185fa5"/></marker>
+<marker id="ur" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c00000"/></marker>
+</defs>
+<rect class="box" x="20" y="100" width="120" height="80" rx="8"/><text x="80" y="146">市電輸入</text>
+<rect class="box" x="190" y="100" width="130" height="80" rx="8"/><text x="255" y="138">整流器</text><text class="s" x="255" y="160">交流→直流</text>
+<rect class="box" x="370" y="100" width="160" height="80" rx="8"/><text x="450" y="138">DC 匯流排</text><text class="s" x="450" y="160">電容濾波／儲能</text>
+<rect class="box" x="580" y="100" width="130" height="80" rx="8"/><text x="645" y="138">逆變器</text><text class="s" x="645" y="160">直流→交流</text>
+<rect class="box" x="760" y="100" width="120" height="80" rx="8"/><text x="820" y="146">負載</text>
+<rect class="box" x="390" y="230" width="120" height="56" rx="8"/><text x="450" y="264">電池</text>
+<g class="f-in"><line x1="140" y1="140" x2="188" y2="140" stroke="#185fa5" stroke-width="4" marker-end="url(#ub)"/></g>
+<line x1="320" y1="140" x2="368" y2="140" stroke="#c00000" stroke-width="4" class="f-in" marker-end="url(#ur)"/>
+<line x1="530" y1="140" x2="578" y2="140" stroke="#c00000" stroke-width="4" marker-end="url(#ur)"/>
+<line x1="710" y1="140" x2="758" y2="140" stroke="#185fa5" stroke-width="4" marker-end="url(#ub)"/>
+<g class="f-bat-chg"><line x1="425" y1="182" x2="425" y2="228" stroke="#c00000" stroke-width="4" marker-end="url(#ur)"/><text class="s" x="395" y="212">充電</text></g>
+<g class="f-bat-dis"><line x1="475" y1="228" x2="475" y2="182" stroke="#c00000" stroke-width="4" marker-end="url(#ur)"/><text class="s" x="505" y="212">放電</text></g>
+<text class="xmark" x="150" y="96" style="fill:#c00000;font-size:28px">✕</text>
+</svg>
+<p id="modeTxt">市電正常：市電 → 整流器 → DC 匯流排 → 逆變器 → 負載；同時對電池充電。</p>
+<div class="card">重點：負載永遠接在「逆變器」後面，電池接在 DC 匯流排上，所以停電時只是 DC 匯流排的來源從整流器換成電池，不需要轉換開關。</div>
+<div class="src">依據 Wiki：W-02 ／ 來源：S-02、S-03、S-08</div>
+</section>
+
+<section class="slide">
+<h2>隔離變壓器：Δ 進、Y 出</h2>
+<ul>
+<li><b>Δ（三角形）初級</b>：沒有中性線，諧波會在繞組內打轉，不容易傳回電源側。</li>
+<li><b>Y（星形）次級</b>：多出中性線，所以同時有 380V（線間）與 220V（相對中性線）。</li>
+<li><b>隔離</b>：擋住大樓端的雜訊，次級單獨接地可降低雜訊耦合。</li>
+</ul>
+<div class="card">驗算：380 ÷ 1.732 ≈ 219，約等於 220V，吻合「Δ220V → Y380/220V」。</div>
+<div class="card warn">限制：隔離變壓器擋得住雜訊，但擋不住低頻的電壓驟降，所以後面還要接 UPS。</div>
+<div class="src">依據 Wiki：W-03 ／ 來源：S-04</div>
+</section>
+
+<section class="slide">
+<h2>接地：中性線只在一個點接地</h2>
+<ul>
+<li>PE（保護接地）把設備外殼接到大地，萬一漏電，電流有安全的路徑。</li>
+<li><b>單點接合原則</b>：中性線與接地導體只在一處相連；多處相連，中性線電流會分流到接地線，形成並聯回路。</li>
+<li>本圖：變壓器 X0 點接 PE 排；大樓接地與專用接地棒共同接到 PE 排。</li>
+</ul>
+<div class="card warn">待確認：UPS 輸出的中性線是否另有內部接地？請查 UPS 手冊，並以現場規範為準。</div>
+<div class="src">依據 Wiki：W-04、W-09 ／ 來源：S-01、S-04</div>
+</section>
+
+<section class="slide">
+<h2>顏色：同一張圖，兩套意義</h2>
+<table>
+<tr><th>頁面</th><th>顏色代表</th><th>對照</th></tr>
+<tr><td>第 1 頁　單線示意圖</td><td>電壓／電流類型（作者自訂）</td><td><i class="chip" style="background:#d07a10"></i>220V　<i class="chip" style="background:#185fa5"></i>380V　<i class="chip" style="background:#c00000"></i>直流　<i class="chip" style="background:#2e8b57"></i>接地</td></tr>
+<tr><td>第 2 頁　端子接線圖</td><td>導線功能（IEC 60446）</td><td><i class="chip" style="background:#8b4513"></i>L1 棕　<i class="chip" style="background:#000"></i>L2 黑　<i class="chip" style="background:#7f7f7f"></i>L3 灰　<i class="chip" style="background:#1f5fbf"></i>N 藍　<i class="chip" style="background:linear-gradient(90deg,#2e8b57 50%,#f2c200 50%)"></i>PE 綠黃</td></tr>
+</table>
+<div class="card warn">陷阱：藍色在第 1 頁是「380V」，在第 2 頁是「中性線」。讀圖前先看圖例；好的圖會把顏色規則寫在圖上。</div>
+<p class="mut">另外，美國、加拿大、日本允許不同顏色，現場規範以當地法規為準。</p>
+<div class="src">依據 Wiki：W-05 ／ 來源：S-01、S-06</div>
+</section>
+
+<section class="slide">
+<h2>算算看：三相電流</h2>
+<p>公式：<b>I = kVA × 1000 ÷ (1.732 × 線間電壓)</b>（平衡負載的估計值）</p>
+<div class="card">
+負載 <input id="kva" type="number" value="21" min="0" step="0.1" style="width:90px"> kVA　
+電壓 <select id="volt"><option value="220">220 V</option><option value="380">380 V</option></select>
+<p>線電流 ≈ <span class="big" id="amp"></span></p>
+</div>
+<p class="mut">試試看：21 kVA 在 220V 約 55 A，在 380V 約 32 A。電壓越高，電流越小。1.732 是三相的幾何係數，不是功率因數。</p>
+<div class="src">依據 Wiki：W-06 ／ 來源：S-05（公式已用 S-01 數字驗算）</div>
+</section>
+
+<section class="slide">
+<h2>算算看：停電能撐多久？</h2>
+<p>公式（取自實驗室電池計算書）：<b>可撐時間 = 60 分鐘 × 24 kW ÷ 負載 kW</b></p>
+<div class="card">
+負載 <input id="pw" type="range" min="1" max="24" step="0.1" value="7.8" style="width:50%"> <b id="pwv"></b> kW
+<p>可撐 ≈ <span class="big" id="rtv"></span></p>
+</div>
+<div class="card warn">這是線性簡化：沒有考慮電池放電曲線，低負載實際會更久，高負載會更短。此公式尚未用外部資料驗證。</div>
+<div class="src">依據 Wiki：W-07 ／ 來源：S-01</div>
+</section>
+
+<section class="slide">
+<h2>三個最容易搞錯的地方</h2>
+<div class="card"><b>1. kW 與 kVA</b>：kW = kVA × 功率因數，kW 不會大於 kVA。圖上 24 kW 與 21 kVA 並列時，要問清楚是怎麼來的。</div>
+<div class="card"><b>2. DC 匯流排電壓 ≠ 電池電壓</b>：電池可經 DC-DC 轉換器接入，匯流排 ±240V 與電池 12V×32＝384V 不一定矛盾，要看規格書。</div>
+<div class="card"><b>3. 顏色沒有唯一答案</b>：先看圖例，再看每一頁用的是哪套規則。</div>
+<div class="src">依據 Wiki：W-09 ／ 來源：S-01、S-05、S-06、S-08</div>
+</section>
+
+<section class="slide">
+<h2>自己動手：用 QElectroTech 畫這張圖</h2>
+<ul>
+<li>一個專案＝一個 .qet 檔，裡面有多張頁面（folio）。</li>
+<li>從元件庫拖曳符號（官方有 8,200 多個），符號上的端子用導線相連。</li>
+<li>好習慣：<b>一頁一個功能</b>、電流方向由左到右、間距一致、少交叉。</li>
+<li>本圖的三頁：單線示意 → 端子接線 → 設備外觀。</li>
+<li>用導線自動編號（L1、L2、L3、N、PE），事後查線才快。</li>
+</ul>
+<div class="src">依據 Wiki：W-08 ／ 來源：S-07</div>
+</section>
+
+<section class="slide">
+<h2>小測驗</h2>
+<div id="quiz"></div>
+<div class="src">依據 Wiki：W-02、W-03、W-05</div>
+</section>
+
+<section class="slide">
+<h2>參考資料</h2>
+<ul style="font-size:16px">
+<li>S-01　實驗室 HPH-30KVA 供電示意圖（QElectroTech 專案檔）</li>
+<li>S-02　Vertiv：What are the different types of UPS systems</li>
+<li>S-03　Schneider Electric：How double-conversion online UPS operate（FAQ）</li>
+<li>S-04　CUNY Pressbooks：Why industrial systems use 3-phase isolation transformers；EEPower：Understanding the basics of isolation transformers</li>
+<li>S-05　kVA 轉安培教學頁（公式已另行驗算）</li>
+<li>S-06　Wikipedia：IEC 60446</li>
+<li>S-07　QElectroTech 官網與 GitHub wiki</li>
+<li>S-08　專利與預印本（電池與 DC 匯流排，輔助用，可信度低）</li>
+</ul>
+<p class="mut">本簡報內容皆可對回 Wiki 頁面（見各頁下方標註）。</p>
+</section>
+
+</div>
+
+<nav class="nav">
+<div class="prog"><i id="bar"></i></div>
+<button id="prev">◀ 上一頁</button><span id="cnt"></span><button id="next">下一頁 ▶</button>
+</nav>
+
+<script>
+const $=id=>document.getElementById(id);
+const S=[...document.querySelectorAll('.slide')];let i=0;
+function go(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,k)=>s.classList.toggle('on',k===i));$('cnt').textContent=(i+1)+' / '+S.length;$('bar').style.width=((i+1)/S.length*100)+'%';history.replaceState(null,'','#'+(i+1));}
+$('prev').onclick=()=>go(i-1);$('next').onclick=()=>go(i+1);
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+ if(e.key==='ArrowRight'||e.key==='PageDown')go(i+1);
+ else if(e.key==='ArrowLeft'||e.key==='PageUp')go(i-1);
+ else if(e.key==='Home')go(0);else if(e.key==='End')go(S.length-1);});
+let x0=null;
+addEventListener('touchstart',e=>{x0=/INPUT|SELECT/.test(e.target.tagName)?null:e.touches[0].clientX});
+addEventListener('touchend',e=>{if(x0===null)return;const d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>60)go(i+(d<0?1:-1));x0=null;});
+
+function setMode(m){$('ups').dataset.mode=m;$('mN').classList.toggle('act',m==='normal');$('mO').classList.toggle('act',m==='out');
+ $('modeTxt').textContent=m==='normal'?'市電正常：市電 → 整流器 → DC 匯流排 → 逆變器 → 負載；同時對電池充電。':'市電中斷：電池 → DC 匯流排 → 逆變器 → 負載；輸出不需要切換。';}
+
+function calc(){const k=+$('kva').value,v=+$('volt').value;$('amp').textContent=(k*1000/(Math.sqrt(3)*v)).toFixed(1)+' A';}
+$('kva').oninput=calc;$('volt').onchange=calc;calc();
+
+function rt(){const p=+$('pw').value;const m=60*24/p;$('pwv').textContent=p.toFixed(1);$('rtv').textContent=Math.round(m)+' 分鐘（約 '+(m/60).toFixed(1)+' 小時）';}
+$('pw').oninput=rt;rt();
+
+const Q=[
+{q:'市電中斷時，雙轉換 UPS 的輸出會怎樣？',o:['先中斷約 4–6 毫秒再恢復','持續供電，因為電池接在 DC 匯流排','要手動切換才有電'],a:1,e:'負載接在逆變器後面，匯流排的電源只是從整流器換成電池。4–6 毫秒是 line-interactive 型。'},
+{q:'三相 380V（線間）系統，相對中性線的電壓約是多少？',o:['190 V','220 V','380 V'],a:1,e:'380 ÷ 1.732 ≈ 219 V。'},
+{q:'圖上同樣是藍色線，意思為何？',o:['永遠是 380V','第 1 頁是 380V，第 2 頁是中性線','永遠是中性線'],a:1,e:'兩頁用了不同的顏色規則，先看圖例。'}];
+$('quiz').innerHTML=Q.map((x,k)=>`<div class="q"><p><b>${k+1}.</b> ${x.q}</p>${x.o.map((t,j)=>`<button data-k="${k}" data-j="${j}">${t}</button>`).join('')}<p class="fb" id="fb${k}"></p></div>`).join('');
+$('quiz').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=+b.dataset.k,j=+b.dataset.j,ok=j===Q[k].a;const f=$('fb'+k);f.textContent=(ok?'✔ 答對。':'✘ 再想想。')+Q[k].e;f.className='fb '+(ok?'ok':'no');};
+
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
